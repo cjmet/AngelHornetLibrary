@@ -10,10 +10,12 @@ namespace AngelHornetLibrary.CLI
 {
     public class MenuCli
     {
-        public bool UseNumbers { get; set; } = true;
-        public int MenuItemWidth { get; set; } = 11;
-        public int MenuItemMaxCount { get; set; } = 7;
-        public bool RunLoop { get; set; } = true;
+        public Action? DefaultAction { get; set; } = null;
+        public bool UseNumbers { get; private set; } = true;  // Use Numbers for Menu Items ... will fix this later
+        public bool PadMenuItems { get; set; } = false;        // Pad Menu Items to MenuItemWidth   
+        public int MenuItemWidth { get; set; } = 14;        // 6 menu items vs Standard old VT100 Terminal Width
+        public int MenuMaxWidth { get; set; } = 90;         // Standard old VT100 Terminal Width
+        public bool RunLoop { get; set; } = false;
 
         // Debug and Warning Variables
         static bool warnAddItem = false;
@@ -27,44 +29,43 @@ namespace AngelHornetLibrary.CLI
         }
 
         MenuItem[] menuItems = new MenuItem[0];
+        
 
-        // CRUD Menu
-        // 1.  Create
-        // 2.1 Read
-        // 2.2 Details  // [3:Details] |
-        // 3.  Update
-        // 4.  Delete
-        // 5.  Exit
 
-        // Default Action is the First Action
+        public void AddDefault(Action actionOnSelect) => DefaultAction = actionOnSelect;
+
+        // First Command is the Default Command if the DefaultAction is not set
         public void AddItem(string command, Action actionOnSelect) => AddItem(new List<string> { command }, actionOnSelect);
-        // public void AddItem (string[] commands, Action actionOnSelect) => AddItem(new List<string>(commands), actionOnSelect);
         public void AddItem(List<String> commands, Action actionOnSelect)
         {
-            if (!warnAddItem && menuItems.Length >= MenuItemMaxCount)
-            {
-                Debug.WriteLine($"MenuCliAddItem: Menu is Full.  Maximum MenuItems is set to {MenuItemMaxCount}");
-                warnAddItem = true;
-            }
             Array.Resize(ref menuItems, menuItems.Length + 1);
             menuItems[^1] = new MenuItem(commands, actionOnSelect);
         }
 
+
         public void PrintMenu()
         {
+            Console.WriteLine();
+            String sum = "";
             for (int i = 0; i < menuItems.Length; i++)
             {
-                if (i != 0 && i % MenuItemMaxCount == 0) Console.WriteLine();
                 string command = "[";
                 if (UseNumbers) command += $"{i + 1}:";
                 command += menuItems[i].commandStrings[0];
-                command = command.PadRight(MenuItemWidth - 2);
+                if (PadMenuItems) command = command.PadRight(MenuItemWidth - 2);
                 if (command.Length > MenuItemWidth - 2) command = command.Substring(0, MenuItemWidth - 2);
                 command += "] ";
+                sum += command;
+                if (sum.Length > MenuMaxWidth)
+                {
+                    Console.WriteLine();
+                    sum = "";
+                }
                 Console.Write($"{command}");
             }
             Console.WriteLine();
         }
+
 
         // public Action Exit() => Exit(true);
         // public Action Exit(bool T)
@@ -74,16 +75,27 @@ namespace AngelHornetLibrary.CLI
             RunLoop = false;
             return null;
         }
+
+
+        public void DefaultActionInvoke()
+        {
+            if (DefaultAction != null)
+                DefaultAction.Invoke();
+            else if (menuItems.Length >= 1 && menuItems[0].actionOnSelect != null)
+                menuItems[0].actionOnSelect.Invoke();
+        }
         public Action? Loop() => Run();
         public Action? Run()
         {
+            if (!RunLoop) DefaultActionInvoke();
             RunLoop = true;
             while (RunLoop)
             {
                 PrintMenu();
                 Console.Write("Enter Command: ");
                 string input = Console.ReadLine();
-                if (int.TryParse(input, out int index))
+                if (input == "") DefaultActionInvoke();
+                else if (int.TryParse(input, out int index))
                 {
                     if (index > 0 && index <= menuItems.Length)
                     {
@@ -103,8 +115,4 @@ namespace AngelHornetLibrary.CLI
         }
 
     }
-
-
-
-
 }
