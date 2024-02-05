@@ -91,12 +91,12 @@ namespace AngelHornetLibrary.CLI
                     }
                     else
                     {
-                        Console.WriteLine("Invalid Command");
+                        Console.WriteLine("Invalid Command:  Index out of Range");
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Invalid Command");
+                    Console.WriteLine("Invalid Command:  Failed to Parse Input");
                 }
             }
             return null;
