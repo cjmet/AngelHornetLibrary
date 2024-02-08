@@ -1,15 +1,27 @@
-﻿using Microsoft.VisualBasic.FileIO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
+﻿
 
 namespace AngelHornetLibrary.CLI
 {
-    public class MenuCli
+
+    public class CliMenu
     {
+
+        public static string CliGetString(string prompt)
+        {
+            Console.Write(prompt);
+            return Console.ReadLine();
+        }
+        public static bool CliGetInt(string prompt, out int value)
+        {
+            Console.Write(prompt);
+            return  int.TryParse(Console.ReadLine().Trim(), out value);
+        }
+        public static bool CliGetDecimal(string prompt, out decimal value)
+        {
+            Console.Write(prompt);
+            return  decimal.TryParse(Console.ReadLine().Trim(), out value);
+        }
+
         public struct MenuItem
         {
             public List<String> commandStrings;
@@ -29,6 +41,7 @@ namespace AngelHornetLibrary.CLI
         public int MenuItemWidth { get; set; } = 14;        // 6 menu items vs Standard old VT100 Terminal Width
         public int MenuMaxWidth { get; set; } = 90;         // Standard old VT100 Terminal Width
         public bool RunLoop { get; set; } = false;
+        public string Message { get; set; } = "";
         public string ErrorMsg { get; set; } = "";
 
 
@@ -57,11 +70,19 @@ namespace AngelHornetLibrary.CLI
         }
 
 
+
         public void PrintMenu()
         {
-            Console.WriteLine(ErrorMsg);
+            if (ErrorMsg != "")
+                Console.WriteLine(ErrorMsg);
+            else if (Message != "")
+                Console.WriteLine(Message);
+            else 
+                Console.WriteLine();
+
             ErrorMsg = "";
             String sum = "";
+
             for (int i = 0; i < menuItems.Length; i++)
             {
                 string command = "[";
@@ -103,7 +124,14 @@ namespace AngelHornetLibrary.CLI
         public Action? Loop()
         {
             RunLoop = true;
-
+            if (menuItems.Length <= 0)
+            {
+                Console.WriteLine("ERROR: No Menu Items to Display");
+                Task.Delay(1000).Wait();
+                
+                RunLoop = false;
+            }
+            
             if (EntryAction != null) EntryAction.Invoke();
             while (RunLoop)
             {
