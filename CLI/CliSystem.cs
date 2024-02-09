@@ -5,12 +5,14 @@ namespace AngelHornetLibrary.CLI
 {
 	public static class CliSystem
 	{
-		public static string FindFile(string filename) => FindFileInVisualStudio(filename, SearchOption.AllDirectories, SearchOption.AllDirectories);
-		public static string FindFileInVisualStudio(string filename, SearchOption searchOption = SearchOption.AllDirectories, SearchOption continueOption = SearchOption.TopDirectoryOnly)
+		
+		public static string FindFile(string filename) => FindFileInVisualStudio(filename, SearchOption.AllDirectories, SearchOption.AllDirectories, false);
+        public static string FindFileAnywhere(string filename) => FindFileInVisualStudio(filename, SearchOption.AllDirectories, SearchOption.AllDirectories, true);
+        public static string FindFileInVisualStudio(string filename, SearchOption searchOption = SearchOption.AllDirectories, SearchOption continueOption = SearchOption.TopDirectoryOnly, bool TraverseUp = true)
 		{
 			string pushd = Directory.GetCurrentDirectory();
 			string[] files = Directory.GetFiles(Directory.GetCurrentDirectory(), filename, searchOption);
-			if (files.Length == 0)
+			if (files.Length == 0 && TraverseUp)
 			{
 				Directory.SetCurrentDirectory("..");
 				// string value = directory.FindFileInVisualStudio(directory, filename, SearchOption.TopDirectoryOnly);
