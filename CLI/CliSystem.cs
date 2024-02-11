@@ -8,6 +8,7 @@ namespace AngelHornetLibrary.CLI
     {
         public void GetFilesRef(string path, string searchPattern, ref List<string> result, ref string status,  SearchOption searchOption = SearchOption.TopDirectoryOnly)
         {
+            if (!Directory.Exists(path)) return;
             EnumerationOptions opt = new EnumerationOptions();
             opt.IgnoreInaccessible = true;
             opt.RecurseSubdirectories = false;
