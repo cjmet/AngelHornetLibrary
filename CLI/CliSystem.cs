@@ -4,9 +4,11 @@ using System.Threading.Tasks;
 
 namespace AngelHornetLibrary.CLI
 {
+
+
     public class AhsUtil
     {
-        public void GetFilesRef(string path, string searchPattern, ref List<string> result, ref string status,  SearchOption searchOption = SearchOption.TopDirectoryOnly)
+        public void GetFilesRef(string path, string searchPattern, ref List<string> result, ref string status, SearchOption searchOption = SearchOption.TopDirectoryOnly)
         {
             if (!Directory.Exists(path)) return;
             EnumerationOptions opt = new EnumerationOptions();
@@ -14,9 +16,9 @@ namespace AngelHornetLibrary.CLI
             opt.RecurseSubdirectories = false;
             opt.MatchCasing = MatchCasing.CaseInsensitive;
 
-            string [] fileList = Directory.GetFiles(path, searchPattern, opt);
-            foreach (string file in fileList) 
-                    result.Add(file);
+            string[] fileList = Directory.GetFiles(path, searchPattern, opt);
+            foreach (string file in fileList)
+                result.Add(file);
 
             string[] dirList = Directory.GetDirectories(path, "*", opt);
             foreach (string dir in dirList)
@@ -27,6 +29,8 @@ namespace AngelHornetLibrary.CLI
                 }
         }
     }
+
+
 
     public static class CliSystem
     {
