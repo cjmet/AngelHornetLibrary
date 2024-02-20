@@ -2,7 +2,8 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using Serilog;
- 
+using static AngelHornetLibrary.AhLog;
+
 
 namespace AngelHornetLibrary
 {
@@ -11,32 +12,22 @@ namespace AngelHornetLibrary
 
     public class AhGetFiles
     {
-        private readonly TimeSpan GetFilesAsyncCancel = TimeSpan.FromSeconds(3600);
-
-        //private readonly Serilog.ILogger _logger;
-        //public AhGetFiles()
-        //{   
-        //}
-        //public AhGetFiles(Serilog.ILogger logger)
-        //{
-        //    _logger = logger;
-        //    if (_logger != null) _logger.Information("Hello, Dependency Injected Serilog!");
-        //    else Debug.WriteLine("Dependency Injected Failed!");
-        //    Environment.Exit(1);
-
-        //}
+        private readonly TimeSpan GetFilesAsyncCancel = TimeSpan.FromMinutes(60);     //  Default Cancellation Token Timeout.
+       
 
         // convert string path -> List<string> paths
         public async IAsyncEnumerable<string> GetFilesAsync(
-            // standard options and syntax
+            // standard options and syntax                                  // --- Standard Options ---
             string path,                                                    // string path or List<string> paths
             string searchPattern = "*",                                     // File Search Pattern
             SearchOption searchOption = SearchOption.AllDirectories,        // Search Option
             EnumerationOptions? fileOptions = null,                         // Enumeration Options, change these at your own peril.
-            // async options
+            // async options                                                // --- Async Options ---
             IProgress<string>? progress = null,                             // Reports directory search progress every 250ms
-            CancellationToken? token = null)                                // If you use this, make sure you cancel it when finished so the IProgress Task will exit as well.
-                                                                            // Cancellation Defaults to GetFilesAsyncCancel, which is about how long it takes to scan my largest SMB Drive.
+            CancellationToken? token = null)                                // *** WARNING *** If you pass in a CancellationToken, you'll need
+                                                                            // to cancel it when finished so the IProgress Task will exit as well.
+                                                                            // Cancellation Defaults to GetFilesAsyncCancel, 1 hour,
+                                                                            // which is about how long it takes to scan my largest SMB Drive.
         {
             await foreach (var result in GetFilesAsync([path], searchPattern, searchOption, fileOptions, progress, token))
             {
@@ -63,8 +54,7 @@ namespace AngelHornetLibrary
                 {
                     string _error = $"\n*** ERROR ***   Directory [{path}] Not Found! \nVerify that you are using proper UPPER and LOWER case filenames.  C:\\DirName does NOT equal C:\\dirname.  Verify that you are using UPPERCASE Drive Letters on Windows Systems.\n";
                     Console.WriteLine(_error);
-                    Debug.WriteLine(_error);
-                    //var log = new ILogger<Program>();  // cjm - work on Dependency Injection Logging later.
+                    LogError(_error);
                     throw new DirectoryNotFoundException(_error);
                 }
             }
@@ -76,8 +66,9 @@ namespace AngelHornetLibrary
             else _token = (CancellationToken)token;
 
 
-            // IProgress Report Task here ... console.writeline for testing for now
+            // IProgress Report Task here ... 
             // Using a task to reduce the number of times the progress.Report is called.
+            // *** WARNING *** If you pass in a CancellationToken, you'll need to cancel it when finished so the IProgress Task will exit as well.
             ConcurrentBag<string> _bag = new ConcurrentBag<string>();
             if (progress != null)
             {

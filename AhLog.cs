@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Logging;
 using Serilog;
-using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
 namespace AngelHornetLibrary
@@ -53,6 +48,7 @@ namespace AngelHornetLibrary
         // AhLog: Start, Stop, Log, ... LogLevels: LogTrace, LogDebug, LogInformation*, LogWarning, LogError, LogCritical
 
         public static void Log(string message) => LogInformation(message);
+        public static void LogInfo(string message) => LogInformation(message);
         public static void LogInformation(string message)
         {
             Start();
