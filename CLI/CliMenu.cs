@@ -14,12 +14,12 @@ namespace AngelHornetLibrary.CLI
         public static bool CliGetInt(string prompt, out int value)
         {
             Console.Write(prompt);
-            return  int.TryParse(Console.ReadLine().Trim(), out value);
+            return int.TryParse(Console.ReadLine().Trim(), out value);
         }
         public static bool CliGetDecimal(string prompt, out decimal value)
         {
             Console.Write(prompt);
-            return  decimal.TryParse(Console.ReadLine().Trim(), out value);
+            return decimal.TryParse(Console.ReadLine().Trim(), out value);
         }
 
         public struct MenuItem
@@ -77,7 +77,7 @@ namespace AngelHornetLibrary.CLI
                 Console.WriteLine(ErrorMsg);
             else if (Message != "")
                 Console.WriteLine(Message);
-            else 
+            else
                 Console.WriteLine();
 
             ErrorMsg = "";
@@ -128,10 +128,10 @@ namespace AngelHornetLibrary.CLI
             {
                 Console.WriteLine("ERROR: No Menu Items to Display");
                 Task.Delay(1000).Wait();
-                
+
                 RunLoop = false;
             }
-            
+
             if (EntryAction != null) EntryAction.Invoke();
             while (RunLoop)
             {

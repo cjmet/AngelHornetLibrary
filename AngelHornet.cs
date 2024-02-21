@@ -1,6 +1,4 @@
-﻿using System.Xml.Schema;
-
-namespace AngelHornetLibrary
+﻿namespace AngelHornetLibrary
 {
     public static class AngelHornet
     {

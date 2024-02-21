@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using Serilog;
+﻿using System.Collections.Concurrent;
 using static AngelHornetLibrary.AhLog;
 
 
@@ -13,7 +10,7 @@ namespace AngelHornetLibrary
     public class AhGetFiles
     {
         private readonly TimeSpan GetFilesAsyncCancel = TimeSpan.FromMinutes(60);     //  Default Cancellation Token Timeout.
-       
+
 
         // convert string path -> List<string> paths
         public async IAsyncEnumerable<string> GetFilesAsync(
@@ -22,7 +19,7 @@ namespace AngelHornetLibrary
             string searchPattern = "*",                                     // File Search Pattern
             SearchOption searchOption = SearchOption.AllDirectories,        // Search Option
             EnumerationOptions? fileOptions = null,                         // Enumeration Options, change these at your own peril.
-            // async options                                                // --- Async Options ---
+                                                                            // async options                                                // --- Async Options ---
             IProgress<string>? progress = null,                             // Reports directory search progress every 250ms
             CancellationToken? token = null)                                // *** WARNING *** If you pass in a CancellationToken, you'll need
                                                                             // to cancel it when finished so the IProgress Task will exit as well.
@@ -261,7 +258,7 @@ namespace AngelHornetLibrary
 
             return !IsRunningOrWaiting();
         }
-        
+
         // *** OBSOLETE CODE BELOW ***
         public FindFilesConcurrentQueue(
              Action<ConcurrentQueue<string>, bool> callBack,
