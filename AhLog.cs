@@ -10,7 +10,7 @@ namespace AngelHornetLibrary
         // AhLog: Start, Stop, Log(), ... LogLevels: LogTrace(), LogDebug(), LogInformation()*, LogWarning(), LogError(), LogCritical()
         // Information is the default log level
         public static ILogger<AhLog> _ahLog { get; private set; } = null;
-        private static string _logFilePath { get; set; } = string.Empty;
+        public static string _logFilePath { get; private set; } = string.Empty;
         public static ILogger<AhLog> Start()
         {
             if (_ahLog == null)
@@ -39,8 +39,6 @@ namespace AngelHornetLibrary
                 .BuildServiceProvider();
                 _ahLog = services.GetService<ILogger<AhLog>>();
                 _ahLog.LogInformation("AhLog Default Logger Started!");
-
-
             }
 
             return _ahLog;
