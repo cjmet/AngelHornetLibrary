@@ -61,7 +61,7 @@ namespace AngelHornetLibrary.CLI
         public Action? GetDefaultAction() => DefaultAction;
         public Action? GetAction(int index) => menuItems[index].actionOnSelect;
 
-
+        public void NewLine() => AddItem("\n", () => { });
         public void AddItem(string command, Action actionOnSelect) => AddItem(new List<string> { command }, actionOnSelect);
         public void AddItem(List<String> commands, Action actionOnSelect)
         {
@@ -92,12 +92,20 @@ namespace AngelHornetLibrary.CLI
                 if (command.Length > MenuItemWidth - 2) command = command.Substring(0, MenuItemWidth - 2);
                 command += "] ";
                 sum += command;
-                if (sum.Length > MenuMaxWidth)
+                if (menuItems[i].commandStrings[0] == "\n")  // Special case for a purposeful newline
                 {
                     Console.WriteLine();
                     sum = "";
                 }
-                Console.Write($"{command}");
+                else if (sum.Length > MenuMaxWidth)
+                {
+                    Console.WriteLine();
+                    sum = "";
+                }
+                else
+                {
+                    Console.Write($"{command}");
+                }
             }
             Console.WriteLine();
         }
