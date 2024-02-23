@@ -202,7 +202,7 @@ public class AhGetFiles
 
         _getFilesOptions.ReturnSpecialDirectories = false;   // probably want to add these two as well
         _getFilesOptions.AttributesToSkip = FileAttributes.Hidden | FileAttributes.System | FileAttributes.Device | FileAttributes.SparseFile | FileAttributes.Temporary | FileAttributes.ReparsePoint;
-        // cjm - ReparsePoint is a tricky one.  Reparse points can cause infinite loops.
+        // ReparsePoint is a tricky one.  Reparse points can cause infinite loops.
         // Given /users/user/Music is a reparse point, you'll have to explicity search it,
         // as you can't search into it.
         return _getFilesOptions;
@@ -359,7 +359,7 @@ public class FindFilesConcurrentQueue
             if (token.IsCancellationRequested) return;
             if (!Directory.Exists(path))
             {
-                // cjm - may not want to do this. If an exception is thrown the "done" flag will never be sent.
+                // may not want to do this. If an exception is thrown the "done" flag will never be sent.
                 //throw new DirectoryNotFoundException(path); 
                 continue;
             }
@@ -379,7 +379,7 @@ public class FindFilesConcurrentQueue
             }
 
         }
-        // cjm - this is a signal to the callback function that the queue is complete.
+        // this is a signal to the callback function that the queue is complete.
         // but I'm not sure if I want to do this, as it could cause confusion with consumer callback functions.
         // and that could inject garbage into any number of things.
         if (Parent) callBack(_queue, true);
@@ -397,7 +397,7 @@ public class FindFilesConcurrentQueue
 
         _getFilesOptions.ReturnSpecialDirectories = false;   // probably want to add these two as well
         _getFilesOptions.AttributesToSkip = FileAttributes.Hidden | FileAttributes.System | FileAttributes.Device | FileAttributes.SparseFile | FileAttributes.Temporary | FileAttributes.ReparsePoint;
-        // cjm - ReparsePoint is a tricky one.  Reparse points can cause infinite loops.
+        // ReparsePoint is a tricky one.  Reparse points can cause infinite loops.
         // Given /users/user/Music is a reparse point, you'll have to explicity search it,
         // as you can't search into it.
         return _getFilesOptions;

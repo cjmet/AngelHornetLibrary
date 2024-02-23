@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 using System.Diagnostics;
 
 namespace AngelHornetLibrary
@@ -7,14 +9,22 @@ namespace AngelHornetLibrary
     public class AhLog
     {
         // using static AngelHornetLibrary.AhLog;
-        // AhLog: Start, Stop, Log(), ... LogLevels: LogTrace(), LogDebug(), LogInformation()*, LogWarning(), LogError(), LogCritical()
-        // Information is the default log level
+        // Debug is the default log level
+        // AhLog: Start, Stop, Log()*, ... LogLevels: LogTrace(), LogDebug()*, LogInformation(), LogWarning(), LogError(), LogCritical()
+        // VRB, DBG, INF, WRN, ERR, FTL
         public static ILogger<AhLog> _ahLog { get; private set; } = null;
+        public static LoggingLevelSwitch _LoggingLevel { get; set; } = new LoggingLevelSwitch();
         public static string _logFilePath { get; private set; } = string.Empty;
-        public static ILogger<AhLog> Start()
+
+
+
+        // The first log message determines the log level.
+        // AhLog: Start, Stop, Log, ... LogLevels: LogTrace, LogDebug*, LogInformation, LogWarning, LogError, LogCritical
+        public static ILogger<AhLog> Start(LogEventLevel LogLevel)
         {
             if (_ahLog == null)
             {
+                _LoggingLevel.MinimumLevel = LogLevel;
                 var folder = Environment.SpecialFolder.ApplicationData;
 #if DEBUG
                 folder = Environment.SpecialFolder.Desktop;
@@ -22,6 +32,7 @@ namespace AngelHornetLibrary
                 var path = Environment.GetFolderPath(folder);
                 _logFilePath = Path.Join(path, "AhLogfile.log");
                 Debug.WriteLine($"AhLog _logFilePath: {_logFilePath}");
+                Debug.WriteLine($"AhLog LogLevel: {LogLevel}");
                 if (File.Exists(_logFilePath))
                 {
                     File.Delete(_logFilePath);
@@ -31,6 +42,7 @@ namespace AngelHornetLibrary
                 .AddLogging(builder =>
                 {
                     var logger = new LoggerConfiguration()
+                    .MinimumLevel.ControlledBy(_LoggingLevel)
                     .WriteTo.Debug()
                     .WriteTo.File(_logFilePath, shared: true, retainedFileCountLimit: 1, fileSizeLimitBytes: 1000000)
                     .CreateLogger();
@@ -38,63 +50,73 @@ namespace AngelHornetLibrary
                 })
                 .BuildServiceProvider();
                 _ahLog = services.GetService<ILogger<AhLog>>();
-                _ahLog.LogInformation("AhLog Default Logger Started!");
+                _ahLog.LogInformation($"AhLogInit: {LogLevel} {_logFilePath}");
             }
 
             return _ahLog;
         }
-        // AhLog: Start, Stop, Log, ... LogLevels: LogTrace, LogDebug, LogInformation*, LogWarning, LogError, LogCritical
+        
 
-        public static void Log(string message) => LogInformation(message);
+
+
+
+        public static void Log(string message) => LogDebug(message);
         public static void LogInfo(string message) => LogInformation(message);
-        public static void LogInformation(string message)
-        {
-            Start();
-            if (_ahLog != null)
-            {
-                _ahLog.LogInformation(message);
-            }
-        }
-        public static void LogDebug(string message)
-        {
-            Start();
-            if (_ahLog != null)
-            {
-                _ahLog.LogDebug(message);
-            }
-        }
-        public static void LogError(string message)
-        {
-            Start();
-            if (_ahLog != null)
-            {
-                _ahLog.LogError(message);
-            }
-        }
+        public static void LogMsg(string message) => LogInformation(message);
+
+
+
         public static void LogTrace(string message)
         {
-            Start();
+            Start(LogEventLevel.Verbose);
             if (_ahLog != null)
             {
                 _ahLog.LogTrace(message);
             }
         }
+        public static void LogDebug(string message)
+        {
+            Start(LogEventLevel.Debug);
+            if (_ahLog != null)
+            {
+                _ahLog.LogDebug(message);
+            }
+        }
+        public static void LogInformation(string message)
+        {
+            Start(LogEventLevel.Information);
+            if (_ahLog != null)
+            {
+                _ahLog.LogInformation(message);
+            }
+        }
         public static void LogWarning(string message)
         {
-            Start();
+            Start(LogEventLevel.Warning);
             if (_ahLog != null)
             {
                 _ahLog.LogWarning(message);
             }
         }
+        public static void LogError(string message)
+        {
+            Start(LogEventLevel.Error);
+            if (_ahLog != null)
+            {
+                _ahLog.LogError(message);
+            }
+        }
         public static void LogCritical(string message)
         {
-            Start();
+            Start(LogEventLevel.Fatal);
             if (_ahLog != null)
             {
                 _ahLog.LogCritical(message);
             }
         }
+
+
+
         public static void Stop() => CloseAndDelete();
         public static void CloseAndDelete()
         {
