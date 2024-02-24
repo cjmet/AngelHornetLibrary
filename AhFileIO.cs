@@ -1,8 +1,6 @@
-﻿using Microsoft.Maui.Storage;
-using System.Collections.Concurrent;
-using System.Reflection.PortableExecutable;
+﻿using System.Collections.Concurrent;
 using static AngelHornetLibrary.AhLog;
-
+using System.Diagnostics;
 
 namespace AngelHornetLibrary
 {
@@ -63,13 +61,13 @@ public class AhGetFiles
         SearchOption searchOption = SearchOption.AllDirectories,        // Search Option
         EnumerationOptions? fileOptions = null,                         // Enumeration Options, change these at your own peril.
                                                                         // async options                                                // --- Async Options ---
-        IProgress<string>? progress = null,                             // Reports directory search progress every 250ms
+        IProgress<string>? iprogress = null,                             // Reports directory search progress every 250ms
         CancellationToken? token = null)                                // *** WARNING *** If you pass in a CancellationToken, you'll need
                                                                         // to cancel it when finished so the IProgress Task will exit as well.
                                                                         // Cancellation Defaults to GetFilesAsyncCancel, 1 hour,
                                                                         // which is about how long it takes to scan my largest SMB Drive.
     {
-        await foreach (var result in GetFilesAsync([path], searchPattern, searchOption, fileOptions, progress, token))
+        await foreach (var result in GetFilesAsync([path], searchPattern, searchOption, fileOptions, iprogress, token))
         {
             yield return result;
         }
@@ -92,9 +90,11 @@ public class AhGetFiles
         {
             if (!Directory.Exists(path))
             {
-                string _error = $"\n*** ERROR ***   Directory [{path}] Not Found! \nVerify that you are using proper UPPER and LOWER case filenames.  C:\\DirName does NOT equal C:\\dirname.  Verify that you are using UPPERCASE Drive Letters on Windows Systems.\n";
+                string _error = $"ERROR[95] Directory [{path}] Not Found! \nVerify that you are using proper UPPER and LOWER case filenames.  C:\\DirName does NOT equal C:\\dirname.  Verify that you are using UPPERCASE Drive Letters on Windows Systems.\n";
                 Console.WriteLine(_error);
-                LogError(_error);
+                Debug.WriteLine(_error);
+                LogError("ERROR[95] Use Case Sensitive Path Names");
+                LogError($"ERROR[95] Directory [{path}] Not Found!");
                 throw new DirectoryNotFoundException(_error);
             }
         }
