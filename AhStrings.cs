@@ -9,30 +9,30 @@ namespace AngelHornetLibrary
     public static class AhStrings
     {
 
-        public static string HeadTruncate(string input, int fixedLength = 0)
+        public static string HeadTruncate(string input, int fixedLength)
         {
-            var length = Console.BufferWidth - 1;
-            if (fixedLength > 0) length = fixedLength;
+            int length=5;
+            if (fixedLength > 5) length = fixedLength;
             if (input.Length <= length) return input;
             return " ... " + input.Substring(input.Length - length + 5);    
         }
 
 
 
-        public static string MiddleTruncate(string input, int fixedLength = 0)
+        public static string MiddleTruncate(string input, int length)
         {
-            var length = Console.BufferWidth - 1;
-            if (fixedLength > 0) length = fixedLength;
+
+            if (length < 6) length = 6;
             if (input.Length <= length) return input;
             return input.Substring(0, length / 2 - 3) + " ... " + input.Substring(input.Length - length / 2 + 2);
         }
 
 
 
-        public static string TailTruncate(string input, int fixedLength = 0)
+        public static string TailTruncate(string input, int fixedLength)
         {
-            var length = Console.BufferWidth - 1;
-            if (fixedLength > 0) length = fixedLength;
+            int length = 5;
+            if (fixedLength > 5) length = fixedLength;
             if (input.Length <= length) return input;
             return input.Substring(0, length - 5) + " ... ";
         }

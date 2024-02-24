@@ -123,7 +123,7 @@ public class AhGetFiles
                         if (_bag.TryTake(out _path)) { progress.Report(_path); }
                     }
                     _bag.Clear();
-                    Task.Delay(250).Wait();
+                    Task.Delay(1000).Wait();
                 }
             }, _token);
             progressTask.Start();
