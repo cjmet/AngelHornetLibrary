@@ -83,7 +83,7 @@ public class AhGetFiles
         SearchOption searchOption = SearchOption.AllDirectories,
         EnumerationOptions? fileOptions = null,
         // async options
-        IProgress<string>? progress = null,
+        IProgress<string>? iprogress = null,
         CancellationToken? token = null)
     {
         foreach (var path in paths)
@@ -110,7 +110,7 @@ public class AhGetFiles
         // Using a task to reduce the number of times the progress.Report is called.
         // *** WARNING *** If you pass in a CancellationToken, you'll need to cancel it when finished so the IProgress Task will exit as well.
         ConcurrentBag<string> _bag = new ConcurrentBag<string>();
-        if (progress != null)
+        if (iprogress != null)
         {
             Task progressTask = new Task(() =>
             {
@@ -120,7 +120,7 @@ public class AhGetFiles
                     if (_bag.Count > 0)
                     {
                         string _path;
-                        if (_bag.TryTake(out _path)) { progress.Report(_path); }
+                        if (_bag.TryTake(out _path)) { iprogress.Report(_path); }
                     }
                     _bag.Clear();
                     Task.Delay(1000).Wait();
@@ -131,7 +131,7 @@ public class AhGetFiles
         // /Progress Task
 
         // Ready, Set, Go!
-        await foreach (var result in GetFilesAsync(paths, searchPattern, searchOption, fileOptions, progress, _token, _bag))
+        await foreach (var result in GetFilesAsync(paths, searchPattern, searchOption, fileOptions, iprogress, _token, _bag))
         {
             yield return result;
         }

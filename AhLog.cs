@@ -26,9 +26,8 @@ namespace AngelHornetLibrary
             {
                 _LoggingLevel.MinimumLevel = LogLevel;
                 var folder = Environment.SpecialFolder.ApplicationData;
-#if DEBUG
-                folder = Environment.SpecialFolder.Desktop;
-#endif
+                if (Debugger.IsAttached)
+                    folder = Environment.SpecialFolder.Desktop;
                 var path = Environment.GetFolderPath(folder);
                 _logFilePath = Path.Join(path, "AhLogfile.log");
                 Debug.WriteLine($"AhLog _logFilePath: {_logFilePath}");
@@ -49,8 +48,10 @@ namespace AngelHornetLibrary
                     builder.AddSerilog(logger);
                 })
                 .BuildServiceProvider();
+
                 _ahLog = services.GetService<ILogger<AhLog>>();
                 _ahLog.LogInformation($"AhLogInit: {LogLevel} {_logFilePath}");
+                File.SetAttributes(_logFilePath, FileAttributes.Hidden);
             }
 
             return _ahLog;
@@ -63,6 +64,7 @@ namespace AngelHornetLibrary
         public static void Log(string message) => LogDebug(message);
         public static void LogInfo(string message) => LogInformation(message);
         public static void LogMsg(string message) => LogInformation(message);
+        public static void LogWarn(string message) => LogWarning(message);
 
 
 
