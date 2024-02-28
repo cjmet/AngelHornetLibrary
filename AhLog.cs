@@ -25,7 +25,7 @@ namespace AngelHornetLibrary
             if (_ahLog == null)
             {
                 _LoggingLevel.MinimumLevel = LogLevel;
-                var folder = Environment.SpecialFolder.ApplicationData;
+                var folder = Environment.SpecialFolder.LocalApplicationData;
                 if (Debugger.IsAttached)
                     folder = Environment.SpecialFolder.Desktop;
                 var path = Environment.GetFolderPath(folder);
@@ -50,7 +50,8 @@ namespace AngelHornetLibrary
                 .BuildServiceProvider();
 
                 _ahLog = services.GetService<ILogger<AhLog>>();
-                _ahLog.LogInformation($"AhLogInit: {LogLevel} {_logFilePath}");
+                _ahLog.LogInformation($"AhLogInit: [{LogLevel}]");
+                _ahLog.LogDebug($"Logfile: {_logFilePath}");
                 File.SetAttributes(_logFilePath, FileAttributes.Hidden);
             }
 

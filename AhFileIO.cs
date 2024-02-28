@@ -10,7 +10,7 @@ namespace AngelHornetLibrary
         // Both these over-ride some file locks: FileShare.ReadWrite
         public async IAsyncEnumerable<string> AhReadLinesAsync(string path, CancellationToken? token = null)
         {
-            await foreach (var line in  PollLinesAsync(path, 0, token)) yield return line;
+            await foreach (var line in PollLinesAsync(path, 0, token)) yield return line;
         }
 
         // Both these over-ride some file locks: FileShare.ReadWrite
@@ -109,6 +109,7 @@ public class AhGetFiles
         // IProgress Report Task here ... 
         // Using a task to reduce the number of times the progress.Report is called.
         // *** WARNING *** If you pass in a CancellationToken, you'll need to cancel it when finished so the IProgress Task will exit as well.
+        string _lastReport = "Searching ... ";
         ConcurrentBag<string> _bag = new ConcurrentBag<string>();
         if (iprogress != null)
         {
@@ -120,8 +121,14 @@ public class AhGetFiles
                     if (_bag.Count > 0)
                     {
                         string _path;
-                        if (_bag.TryTake(out _path)) { iprogress.Report(_path); }
+                        if (_bag.TryTake(out _path))
+                        {
+                            iprogress.Report(_path);
+                            _lastReport = _path;
+                        }
                     }
+                    else
+                        iprogress.Report(_lastReport);
                     _bag.Clear();
                     Task.Delay(1000).Wait();
                 }
@@ -409,9 +416,9 @@ public class FindFilesConcurrentQueue
 
 
 
-    // ================================================================
-    // ================================================================
-    // ================================================================
+// ================================================================
+// ================================================================
+// ================================================================
 
 
 
