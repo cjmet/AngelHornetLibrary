@@ -37,7 +37,7 @@ namespace AngelHornetLibrary
                         }
                         filePos = (int)fileStream.Position;
                         fileSize = (int)fileStream.Length;
-                        await Task.Delay(TimeSpan.FromSeconds(pollIntervalSeconds));
+                        if (pollIntervalSeconds > 0) await Task.Delay(TimeSpan.FromSeconds(pollIntervalSeconds));
                     }
                 }
             } while (_token.IsCancellationRequested == false && pollIntervalSeconds > 0);
@@ -167,7 +167,7 @@ public class AhGetFiles
             if (token.IsCancellationRequested) yield break;
             else
             {
-                if ((progress != null && bag.Count <= 0) || true) bag.Add(path);
+                if (progress != null) bag.Add(path);          // 'true': changed my mind to report all.
                 await foreach (var s in LambdaGetFiles(path, searchPattern, fileOptions))
                     yield return s;
                 if (searchOption == SearchOption.AllDirectories)
