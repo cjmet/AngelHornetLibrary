@@ -15,21 +15,25 @@ namespace AngelHornetLibrary
         public static ILogger<AhLog> _ahLog { get; private set; } = null;
         public static LoggingLevelSwitch _LoggingLevel { get; set; } = new LoggingLevelSwitch();
         public static string _logFilePath { get; private set; } = string.Empty;
+        public static string _logFileName { get; private set; } = "AhLogfile.log";
 
 
 
         // The first log message determines the log level.
         // AhLog: Start, Stop, Log, ... LogLevels: LogTrace, LogDebug*, LogInformation, LogWarning, LogError, LogCritical
-        public static ILogger<AhLog> Start(LogEventLevel LogLevel)
+        public static ILogger<AhLog> Start(LogEventLevel LogLevel, string? FileName = null)
         {
             if (_ahLog == null)
             {
                 _LoggingLevel.MinimumLevel = LogLevel;
+                if (FileName != null) _logFileName = FileName;
+                
+                
                 var folder = Environment.SpecialFolder.LocalApplicationData;
                 if (Debugger.IsAttached)
                     folder = Environment.SpecialFolder.Desktop;
                 var path = Environment.GetFolderPath(folder);
-                _logFilePath = Path.Join(path, "AhLogfile.log");
+                _logFilePath = Path.Join(path, _logFileName);
                 Debug.WriteLine($"AhLog _logFilePath: {_logFilePath}");
                 Debug.WriteLine($"AhLog LogLevel: {LogLevel}");
                 if (File.Exists(_logFilePath))
@@ -57,8 +61,7 @@ namespace AngelHornetLibrary
 
             return _ahLog;
         }
-        
-
+    
 
 
 
