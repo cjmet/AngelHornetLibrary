@@ -9,26 +9,33 @@ namespace AngelHornetLibrary
     public class AhLog
     {
         // using static AngelHornetLibrary.AhLog;
-        // Debug is the default log level
-        // AhLog: Start, Stop, Log()*, ... LogLevels: LogTrace(), LogDebug()*, LogInformation(), LogWarning(), LogError(), LogCritical()
-        // VRB, DBG, INF, WRN, ERR, FTL
+        // AhLog: Start, Stop, Log(), ... LogLevels: LogTrace(), LogDebug()*, LogInformation(), LogWarning(), LogError(), LogCritical()
+        // Synonym:  Log(), LogInfo(), LogMsg(), LogInformation()
+        // Synonym:  LogWarn(), LogWarning()
+        // Start(), or The first log message determines the log level.
+        // Log*(True) will temporarily set the log level to that level.
+        // Log*(False) will reset the log level to the default level.
+        // Log Codes: VRB, DBG, INF, WRN, ERR, FTL
+
         public static ILogger<AhLog> _ahLog { get; private set; } = null;
         public static LoggingLevelSwitch _LoggingLevel { get; set; } = new LoggingLevelSwitch();
         public static string _logFilePath { get; private set; } = string.Empty;
         public static string _logFileName { get; private set; } = "AhLogfile.log";
+        public static LogEventLevel _defaultLogLevel { get; private set; } = LogEventLevel.Information;
 
 
-
-        // The first log message determines the log level.
-        // AhLog: Start, Stop, Log, ... LogLevels: LogTrace, LogDebug*, LogInformation, LogWarning, LogError, LogCritical
         public static ILogger<AhLog> Start(LogEventLevel LogLevel, string? FileName = null)
         {
             if (_ahLog == null)
             {
                 _LoggingLevel.MinimumLevel = LogLevel;
+                //_LoggingLevel.MinimumLevelChanged += (s, e) =>
+                //{
+                //    Debug.WriteLine($"AhLog: LogLevelChanged: {e.NewLevel}");
+                //};
+                _defaultLogLevel = LogLevel;
                 if (FileName != null) _logFileName = FileName;
-                
-                
+
                 var folder = Environment.SpecialFolder.LocalApplicationData;
                 if (Debugger.IsAttached)
                     folder = Environment.SpecialFolder.Desktop;
@@ -70,6 +77,10 @@ namespace AngelHornetLibrary
         public static void LogMsg(string message) => LogInformation(message);
         public static void LogWarn(string message) => LogWarning(message);
 
+        public static void Log(bool value) => LogDebug(value);
+        public static void LogInfo(bool value) => LogInformation(value);
+        public static void LogMsg(bool value) => LogInformation(value);
+        public static void LogWarn(bool value) => LogWarning(value);
 
 
         public static void LogTrace(string message)
@@ -120,6 +131,40 @@ namespace AngelHornetLibrary
                 _ahLog.LogCritical(message);
             }
         }
+
+
+
+        public static void LogTrace(bool value)
+        {
+            if (value) _LoggingLevel.MinimumLevel = LogEventLevel.Verbose;
+            else _LoggingLevel.MinimumLevel = _defaultLogLevel;
+        }
+        public static void LogDebug(bool value)
+        {
+            if (value) _LoggingLevel.MinimumLevel = LogEventLevel.Debug;
+            else _LoggingLevel.MinimumLevel = _defaultLogLevel;
+        }
+        public static void LogInformation(bool value)
+        {
+            if (value) _LoggingLevel.MinimumLevel = LogEventLevel.Information;
+            else _LoggingLevel.MinimumLevel = _defaultLogLevel;
+        }
+        public static void LogWarning(bool value)
+        {
+            if (value) _LoggingLevel.MinimumLevel = LogEventLevel.Warning;
+            else _LoggingLevel.MinimumLevel = _defaultLogLevel;
+        }
+        public static void LogError(bool value)
+        {
+            if (value) _LoggingLevel.MinimumLevel = LogEventLevel.Error;
+            else _LoggingLevel.MinimumLevel = _defaultLogLevel;
+        }
+        public static void LogCritical(bool value)
+        {
+            if (value) _LoggingLevel.MinimumLevel = LogEventLevel.Fatal;
+            else _LoggingLevel.MinimumLevel = _defaultLogLevel;
+        }
+
 
 
 
