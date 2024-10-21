@@ -5,6 +5,19 @@
         private static string _year { get; set; } = "2024";
         public static string Logo()
         {
+            return 
+        """
+        _______                   _______
+        \___   \__    |\ /|    __/   ___/ 
+          \___    \_ ( + + ) _/    ___/   
+            \___    \ ) ' ( /    ___/     
+              \__   _/     \_   __/      
+                \--/( +     )\__/ 
+                     \_/-\_/ \~~~~>
+        """ + $"\n                                 (c) AngelHornet {_year}";
+        }
+        public static string LogoAT()
+        {
             // ASCII Art is (c) All Rights Reserved.
             // Source Code is (c) GPL 3.0
             return """
