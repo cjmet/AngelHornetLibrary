@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace AngelHornetLibrary.CLI
 {
@@ -34,24 +36,55 @@ namespace AngelHornetLibrary.CLI
     public static class CliSystem
     {
 
-        public static string FindFile(string filename) => FindFileInVisualStudio(filename, SearchOption.AllDirectories, SearchOption.AllDirectories, false);
-        public static string FindFileAnywhere(string filename) => FindFileInVisualStudio(filename, SearchOption.AllDirectories, SearchOption.AllDirectories, true);
-        public static string FindFileInVisualStudio(string filename, SearchOption searchOption = SearchOption.AllDirectories, SearchOption continueOption = SearchOption.TopDirectoryOnly, bool TraverseUp = true)
+
+        // FindFileInVisualStudio("filename", SearchOption, TraverseSideWays, TraverseSolution, TraverseUp);
+        // Spider Current Dir, Traverse Sideways and Spider, Traverse Up No Spider, Spider at Destination and Return.
+        // continueOption is obsolete, but left in for compatibility.
+        public static string? FindFile(string filename) => FindFileInVisualStudio(filename, SearchOption.AllDirectories, TraverseSideways: false, TraverseSolution: false, TraverseUp: false);
+        public static string? FindFileInVisualStudio(string filename, SearchOption searchOption = SearchOption.AllDirectories, bool TraverseSideways = true, bool TraverseSolution = false, bool TraverseUp = true)
         {
             string pushd = Directory.GetCurrentDirectory();
-            string[] files = Directory.GetFiles(Directory.GetCurrentDirectory(), filename, searchOption);
+            string[] files = Directory.GetFiles(Directory.GetCurrentDirectory(), filename, searchOption).Where(file => (File.GetAttributes(file) & FileAttributes.ReparsePoint) == 0).ToArray();
+            if (files.Length == 0 && TraverseSideways)
+            {
+                TraverseSideways = false;  // We tried to traverse sideways, but failed, so don't try again
+                // get projectdir from env
+                string? solutionDir = Environment.GetEnvironmentVariable("SolutionDir");
+                if (!string.IsNullOrEmpty(solutionDir)) Debug.WriteLine($"TraverseSideways(Env): {solutionDir}");
+                else
+                {
+                    solutionDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                    if (!string.IsNullOrEmpty(solutionDir)) Debug.WriteLine($"TraverseSideways(Exec): {solutionDir}");
+                }
+                if (!string.IsNullOrEmpty(solutionDir))
+                {
+                    Directory.SetCurrentDirectory(solutionDir);
+
+                    string? value = FindFileInVisualStudio(filename, searchOption, TraverseSideways, TraverseSolution, TraverseUp);
+                    return value;
+                }
+                else Debug.WriteLine("TraverseSideways: Not Found");
+            }
+            // check for .sln in current directory, if found set TraverseUp to false
+            string[] SolutionFiles = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.sln", SearchOption.TopDirectoryOnly);
+            if (!TraverseSolution && SolutionFiles.Length > 0)
+            {
+                Debug.WriteLine("SolutionFile:" + SolutionFiles[0]);
+                TraverseUp = false;
+            }
             if (files.Length == 0 && TraverseUp)
             {
                 Directory.SetCurrentDirectory("..");
-                // string value = directory.FindFileInVisualStudio(directory, filename, SearchOption.TopDirectoryOnly);
-                string value = FindFileInVisualStudio(filename, continueOption);
+                Debug.WriteLine("TraverseUp:" + Directory.GetCurrentDirectory());
+                string? value = FindFileInVisualStudio(filename, SearchOption.TopDirectoryOnly, TraverseSideways, TraverseSolution, TraverseUp);  // Don't spider while climbing.
                 Directory.SetCurrentDirectory(pushd);
                 return value;
             }
             else
             {
                 Directory.SetCurrentDirectory(pushd);
-                return files[0];
+                if (files.Length > 0) return files[0];
+                else return null;
             }
         }
 
