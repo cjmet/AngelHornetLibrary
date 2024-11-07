@@ -40,43 +40,71 @@ namespace AngelHornetLibrary.CLI
         // FindFileInVisualStudio("filename", SearchOption, TraverseSideWays, TraverseSolution, TraverseUp);
         // Spider Current Dir, Traverse Sideways and Spider, Traverse Up No Spider, Spider at Destination and Return.
         // continueOption is obsolete, but left in for compatibility.
-        public static string? FindFile(string filename) => FindFileInVisualStudio(filename, SearchOption.AllDirectories, TraverseSideways: false, TraverseSolution: false, TraverseUp: false);
-        public static string? FindFileInVisualStudio(string filename, SearchOption searchOption = SearchOption.AllDirectories, bool TraverseSideways = true, bool TraverseSolution = false, bool TraverseUp = true)
+        public static string? FindFile(string filename) => FindFileInVisualStudio(filename, SearchOption.AllDirectories, SearchOption.TopDirectoryOnly, TraverseSideways: false, TraverseSolution: false, TraverseUp: false);
+        static bool CliWarning = false;
+        public static string? FindFileInVisualStudio(string filename, SearchOption searchOption = SearchOption.AllDirectories, SearchOption continueOption = SearchOption.AllDirectories, bool TraverseSideways = true, bool TraverseSolution = false, bool TraverseUp = true)
         {
-            string pushd = Directory.GetCurrentDirectory();
-            string[] files = Directory.GetFiles(Directory.GetCurrentDirectory(), filename, searchOption).Where(file => (File.GetAttributes(file) & FileAttributes.ReparsePoint) == 0).ToArray();
+            if (!CliWarning)
+            {
+                Debug.WriteLine("\nWARNING: FindFileInVisualStudio is only intended for use while debugging COMMAND LINE only apps inside the Visual Studio IDE.\n");
+                CliWarning = true;
+            }
+            string cwd = Directory.GetCurrentDirectory();
+            string pushd = cwd;
+            string[] files = Array.Empty<string>();
+            try
+            {
+                files = Directory.GetFiles(cwd, filename, searchOption).Where(file => (File.GetAttributes(file) & FileAttributes.ReparsePoint) == 0).ToArray();
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"ERROR: FindFileInVisualStudio: Exception");
+                Console.Error.WriteLine($"\tDirectory: {cwd}");
+                Console.Error.WriteLine($"\tSearchFor: {filename}");
+                Console.Error.WriteLine($"\tOptions: {searchOption}");
+                Console.Error.WriteLine($"\tException: {e.Message}");
+                return null;
+            }
             if (files.Length == 0 && TraverseSideways)
             {
                 TraverseSideways = false;  // We tried to traverse sideways, but failed, so don't try again
                 // get projectdir from env
                 string? solutionDir = Environment.GetEnvironmentVariable("SolutionDir");
-                if (!string.IsNullOrEmpty(solutionDir)) Debug.WriteLine($"TraverseSideways(Env): {solutionDir}");
-                else
+                if (string.IsNullOrEmpty(solutionDir))
                 {
                     solutionDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                    if (!string.IsNullOrEmpty(solutionDir)) Debug.WriteLine($"TraverseSideways(Exec): {solutionDir}");
                 }
                 if (!string.IsNullOrEmpty(solutionDir))
                 {
                     Directory.SetCurrentDirectory(solutionDir);
-
-                    string? value = FindFileInVisualStudio(filename, searchOption, TraverseSideways, TraverseSolution, TraverseUp);
+                    string? value = FindFileInVisualStudio(filename, searchOption, continueOption, TraverseSideways, TraverseSolution, TraverseUp);
                     return value;
                 }
-                else Debug.WriteLine("TraverseSideways: Not Found");
+
             }
             // check for .sln in current directory, if found set TraverseUp to false
-            string[] SolutionFiles = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.sln", SearchOption.TopDirectoryOnly);
+            string[] SolutionFiles = Directory.GetFiles(cwd, "*.sln", SearchOption.TopDirectoryOnly);
             if (!TraverseSolution && SolutionFiles.Length > 0)
             {
-                Debug.WriteLine("SolutionFile:" + SolutionFiles[0]);
-                TraverseUp = false;
+                if (TraverseUp)
+                {
+                    TraverseUp = false;
+                    string? value = FindFileInVisualStudio(filename, continueOption, continueOption, TraverseSideways, TraverseSolution, TraverseUp);
+                    return value;
+                }
             }
             if (files.Length == 0 && TraverseUp)
             {
                 Directory.SetCurrentDirectory("..");
-                Debug.WriteLine("TraverseUp:" + Directory.GetCurrentDirectory());
-                string? value = FindFileInVisualStudio(filename, SearchOption.TopDirectoryOnly, TraverseSideways, TraverseSolution, TraverseUp);  // Don't spider while climbing.
+                string newcwd = Directory.GetCurrentDirectory();
+                string? value = "";
+                if (newcwd == cwd)
+                {
+                    TraverseUp = false;
+                    value = FindFileInVisualStudio(filename, continueOption, continueOption, TraverseSideways, TraverseSolution, TraverseUp);
+                    return value;
+                }
+                value = FindFileInVisualStudio(filename, SearchOption.TopDirectoryOnly, continueOption, TraverseSideways, TraverseSolution, TraverseUp);  // Don't spider while climbing.
                 Directory.SetCurrentDirectory(pushd);
                 return value;
             }
